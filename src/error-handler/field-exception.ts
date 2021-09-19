@@ -1,6 +1,5 @@
 import { CustomError } from "./custom-error";
 
-
 export class FieldError extends CustomError {
   statusCode = 401;
   errObj: any;

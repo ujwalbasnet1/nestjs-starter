@@ -1,13 +1,4 @@
-import {
-  ArgumentsHost,
-  BadRequestException,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-  HttpStatus,
-  Logger,
-} from "@nestjs/common";
-import { ValidationError } from "class-validator";
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from "@nestjs/common";
 import mongoose from 'mongoose';
 import { CustomError } from "./custom-error";
 
@@ -35,23 +26,29 @@ export class AllExceptionsFilter implements ExceptionFilter {
           ? exception?.getResponse()["message"]
           : exception?.getResponse();
 
-      response.status(status).json({
-        type: "Http Exception",
-        errors: Array.isArray(error) ? error : [error],
-      });
-    } else if (exception instanceof mongoose.Error.CastError) {
-      response.status(500).json({
-        message: exception.message,
-      });
-    } else if (exception instanceof mongoose.Error.ValidationError) {
-      //Handle Mongoose Validation Errors
-      const errorKeys = Object.keys(exception.errors);
-      const errs: { message: string }[] = [];
-      errorKeys.forEach((key) => errs.push({ message: exception.errors[key].message }));
-      response.status(400).json({
-        errors: errs,
-      });
+      let err = { type: "Http Exception" }
+
+      if (Array.isArray(error)) {
+        err["errors"] = error
+      } else {
+        err["message"] = error
+      }
+
+      response.status(status).json(err);
     }
+    // else if (exception instanceof (mongoose?.Error?.CastError)) {
+    //   response.status(500).json({
+    //     message: exception.message,
+    //   });
+    // } else if (exception instanceof mongoose?.Error?.ValidationError) {
+    //   //Handle Mongoose Validation Errors
+    //   const errorKeys = Object.keys(exception.errors);
+    //   const errs: { message: string }[] = [];
+    //   errorKeys.forEach((key) => errs.push({ message: exception.errors[key].message }));
+    //   response.status(400).json({
+    //     errors: errs,
+    //   });
+    // }
     else {
       response.status(status).json({
         type: "Unknown Error",

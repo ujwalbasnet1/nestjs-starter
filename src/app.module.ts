@@ -1,22 +1,26 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { GlobalModule } from './core/injection/global.module';
+import { dbConfig } from './database/config/db.config';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ormConfig } from './database/config/ormconfig';
-import { UserController } from './user/user.controller';
-import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(dbConfig().url, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     }),
-    MongooseModule.forRoot(ormConfig().url),
+    GlobalModule,
     UserModule,
+    AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+
+  exports: [
+    GlobalModule,
+  ]
 })
 export class AppModule { }
